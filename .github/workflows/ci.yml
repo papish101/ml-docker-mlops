@@ -1,4 +1,4 @@
-name: ML Application CI
+name: ML Docker CI
 
 on:
   push:
@@ -44,3 +44,10 @@ jobs:
       - name: Run tests
         run: |
           pytest
+
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ml-api:test \
+            ./app
