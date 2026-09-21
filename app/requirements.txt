@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+scikit-learn
+joblib
+psycopg2-binary
+redis
+prometheus-fastapi-instrumentator
+pytest
+httpx
