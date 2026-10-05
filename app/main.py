@@ -13,9 +13,16 @@ app = FastAPI(
 )
 
 Instrumentator().instrument(app).expose(app)
+
 # Load ML model
 model = joblib.load("model.pkl")
 
+# Dictionary to map prediction codes to actual flower species names
+FLOWER_NAMES = {
+    0: "Iris Setosa",
+    1: "Iris Versicolor",
+    2: "Iris Virginica"
+}
 
 # Redis connection
 redis_client = redis.Redis(
@@ -33,7 +40,6 @@ class PredictionInput(BaseModel):
 
 
 def get_db_connection():
-
     return psycopg2.connect(
         host=os.getenv("POSTGRES_HOST", "postgres"),
         database=os.getenv("POSTGRES_DB", "ml_db"),
@@ -44,7 +50,6 @@ def get_db_connection():
 
 @app.get("/")
 def home():
-
     return {
         "message": "ML Prediction API is running"
     }
@@ -52,7 +57,6 @@ def home():
 
 @app.get("/health")
 def health():
-
     return {
         "status": "healthy"
     }
@@ -73,9 +77,10 @@ def predict(data: PredictionInput):
     cached_prediction = redis_client.get(cache_key)
 
     if cached_prediction:
-
+        prediction_code = int(cached_prediction)
         return {
-            "prediction": int(cached_prediction),
+            "prediction": prediction_code,
+            "species_name": FLOWER_NAMES.get(prediction_code, "Unknown"),
             "source": "redis_cache"
         }
 
@@ -91,7 +96,6 @@ def predict(data: PredictionInput):
 
     # Save to PostgreSQL
     conn = get_db_connection()
-
     cursor = conn.cursor()
 
     cursor.execute(
@@ -116,7 +120,6 @@ def predict(data: PredictionInput):
     )
 
     conn.commit()
-
     cursor.close()
     conn.close()
 
@@ -129,5 +132,6 @@ def predict(data: PredictionInput):
 
     return {
         "prediction": prediction,
+        "species_name": FLOWER_NAMES.get(prediction, "Unknown"),
         "source": "ml_model"
     }

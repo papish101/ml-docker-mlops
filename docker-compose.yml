@@ -93,6 +93,12 @@ services:
     ports:
       - "3000:3000"
 
+    volumes:
+      # Map the dashboard provider file
+      - ./grafana/provisioning/dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      # Map the directory containing your exported dashboard .json files or downloaded dashboards
+      - ./grafana/provisioning/dashboards:/var/lib/grafana/dashboards
+
     networks:
       - ml-network
 
