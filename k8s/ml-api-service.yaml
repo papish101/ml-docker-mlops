@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ml-api
+spec:
+  type: NodePort
+  selector:
+    app: ml-api
+  ports:
+    - port: 8000
+      targetPort: 8000
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis # This matches the internal hostname your FastAPI application is looking for
+spec:
+  type: ClusterIP # Internal cluster communication only (not exposed to the internet)
+  selector:
+    app: redis # This MUST match the 'app' label defined in your Redis Deployment file
+  ports:
+    - port: 6379
+      targetPort: 6379
+

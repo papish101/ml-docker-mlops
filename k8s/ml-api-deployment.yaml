@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ml-api
+  template:
+    metadata:
+      labels:
+        app: ml-api
+    spec:
+      containers:
+        - name: ml-api
+          image: ml-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          
+          # 💡 Add this env block to pass the correct network hostname to Python
+          env:
+            - name: REDIS_HOST
+              value: "redis" # This matches the name metadata of your Redis service
+            - name: REDIS_PORT
+              value: "6379"

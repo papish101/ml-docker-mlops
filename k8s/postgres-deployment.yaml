@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert -f docker-compose.yml
+      -o k8s/
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: postgres
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: postgres
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert -f docker-compose.yml
+          -o k8s/
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/ml-network: "true"
+        io.kompose.service: postgres
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_DB
+          value: "mldb"
+        - name: POSTGRES_PASSWORD
+          value: "postgrespass"
+        - name: POSTGRES_USER
+          value: "postgres"
+        image: postgres:16
+        imagePullPolicy: ""
+        livenessProbe:
+          exec:
+            command:
+            - 'pg_isready -U  -d '
+          failureThreshold: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+        name: ml-postgres
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: postgres-data
+        - mountPath: /docker-entrypoint-initdb.d/init.sql
+          name: postgres-claim1
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: postgres-data
+      - name: postgres-claim1
+        persistentVolumeClaim:
+          claimName: postgres-claim1
+status: {}

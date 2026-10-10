@@ -5,11 +5,21 @@ import psycopg2
 import redis
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware  # <-- Imported CORS middleware
 from pydantic import BaseModel
 from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(
     title="ML Prediction API"
+)
+
+# <-- Added CORS middleware configuration right here -->
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows any frontend webpage to safely communicate with your API
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows GET, POST, OPTIONS, etc.
+    allow_headers=["*"],
 )
 
 Instrumentator().instrument(app).expose(app)

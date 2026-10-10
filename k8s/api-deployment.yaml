@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert -f docker-compose.yml -o k8s/
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: api
+  name: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: api
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert -f docker-compose.yml -o k8s/
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/ml-network: "true"
+        io.kompose.service: api
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_DB
+          value: "mldb"
+        - name: POSTGRES_HOST
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "postgrespass"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: REDIS_HOST
+          value: "redis"
+        - name: REDIS_PORT
+          value: "6379"
+        image: api:latest
+        imagePullPolicy: IfNotPresent 
+        name: ml-api
+        ports:
+        - containerPort: 8000
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}

@@ -1,115 +1,77 @@
-services:
+version: '3'
 
+services:
   api:
     build: ./app
     container_name: ml-api
-
     ports:
       - "8000:8000"
-
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
-
     depends_on:
-      postgres:
-        condition: service_healthy
-
-      redis:
-        condition: service_healthy
-
+      - postgres
+      - redis
     networks:
       - ml-network
 
-
   postgres:
-
     image: postgres:16
-
     container_name: ml-postgres
-
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./app/init.sql:/docker-entrypoint-initdb.d/init.sql
-
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
-
     networks:
       - ml-network
 
-
   redis:
-
     image: redis:7-alpine
-
     container_name: ml-redis
-
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 10
-
     networks:
       - ml-network
-
 
   prometheus:
-
     image: prom/prometheus
-
     container_name: ml-prometheus
-
     ports:
       - "9090:9090"
-
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-
     networks:
       - ml-network
-
 
   grafana:
-
     image: grafana/grafana
-
     container_name: ml-grafana
-
     ports:
       - "3000:3000"
-
     volumes:
-      # Map the dashboard provider file
       - ./grafana/provisioning/dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
-      # Map the directory containing your exported dashboard .json files or downloaded dashboards
       - ./grafana/provisioning/dashboards:/var/lib/grafana/dashboards
-
     networks:
       - ml-network
 
-
 volumes:
-
   postgres-data:
 
-
 networks:
-
   ml-network:
-
     driver: bridge

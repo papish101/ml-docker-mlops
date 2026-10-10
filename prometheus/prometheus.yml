@@ -7,4 +7,4 @@ scrape_configs:
 
     static_configs:
       - targets:
-          - "ml-api:8000"
+          - "api:8000"
