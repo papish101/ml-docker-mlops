@@ -5,7 +5,7 @@ import psycopg2
 import redis
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware  # <-- Imported CORS middleware
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from prometheus_fastapi_instrumentator import Instrumentator
 
@@ -13,12 +13,12 @@ app = FastAPI(
     title="ML Prediction API"
 )
 
-# <-- Added CORS middleware configuration right here -->
+# CORS configuration to allow your frontend slider web UI to communicate with this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows any frontend webpage to safely communicate with your API
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows GET, POST, OPTIONS, etc.
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -34,12 +34,22 @@ FLOWER_NAMES = {
     2: "Iris Virginica"
 }
 
-# Redis connection
+# --- SAFE REDIS CONNECTION PORTS PARSING FOR KUBERNETES ---
+redis_port_raw = os.getenv("REDIS_PORT", "6379")
+
+# If Kubernetes automatically injects a "tcp://10.x.x.x:6379" string, parse out only the port number
+if "tcp://" in str(redis_port_raw):
+    redis_port = int(str(redis_port_raw).split(":")[-1])
+else:
+    redis_port = int(redis_port_raw)
+
+# Initialize the parsed Redis client
 redis_client = redis.Redis(
     host=os.getenv("REDIS_HOST", "redis"),
-    port=int(os.getenv("REDIS_PORT", 6379)),
+    port=redis_port,
     decode_responses=True
 )
+# ----------------------------------------------------------
 
 
 class PredictionInput(BaseModel):
