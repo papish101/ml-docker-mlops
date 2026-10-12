@@ -18,10 +18,8 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8000
-          
-          # 💡 Add this env block to pass the correct network hostname to Python
           env:
             - name: REDIS_HOST
-              value: "redis" # This matches the name metadata of your Redis service
+              value: "redis" 
             - name: REDIS_PORT
               value: "6379"

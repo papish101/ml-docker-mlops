@@ -16,10 +16,17 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: papish101/ml-frontend-ui:latest
-          imagePullPolicy: Always
+          image: papish101/ml-frontend:latest # 💡 Fixed to match the image we built
+          imagePullPolicy: Never               # 💡 Fixed to use local Minikube image cache
           ports:
             - containerPort: 80
+          
+          # 💡 Added this env block to stop the Redis connection string crash
+          env:
+            - name: REDIS_HOST
+              value: "redis"
+            - name: REDIS_PORT
+              value: "6379"
 ---
 apiVersion: v1
 kind: Service
@@ -29,7 +36,7 @@ spec:
   type: NodePort
   ports:
     - port: 80
-      targetPort: 80
+      targetPort: 8000
       nodePort: 30090
   selector:
     app: ml-frontend
